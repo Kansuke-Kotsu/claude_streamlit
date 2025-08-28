@@ -36,6 +36,9 @@ def main():
         layout="wide"
     )
     
+    # セッション状態を初期化（最初に実行）
+    initialize_session_state()
+    
     st.title("🤖 Claude Streamlit チャットボット")
     st.markdown("---")
     
@@ -63,9 +66,6 @@ def main():
             st.metric("総メッセージ数", total_messages)
             st.metric("ユーザーメッセージ", user_messages)
             st.metric("ボットメッセージ", bot_messages)
-    
-    # セッション状態を初期化
-    initialize_session_state()
     
     # チャット履歴を表示
     chat_container = st.container()
