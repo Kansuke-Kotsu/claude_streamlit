@@ -36,6 +36,17 @@ def get_bot_response(user_message):
     except Exception as e:
         return f"⚠️ エラーが発生しました: {str(e)}"
 
+def stream_text(text, placeholder, delay=0.03):
+    """テキストを1文字ずつストリーミング表示する"""
+    displayed_text = ""
+    for char in text:
+        displayed_text += char
+        placeholder.markdown(displayed_text + "▊")  # カーソル風の表示
+        time.sleep(delay)
+    
+    # 最終的にカーソルを削除
+    placeholder.markdown(displayed_text)
+
 def main():
     st.set_page_config(
         page_title="Claude Streamlit チャットボット",
@@ -92,7 +103,10 @@ def main():
         with st.chat_message("assistant"):
             with st.spinner(f"{bot_name}が応答を考えています..."):
                 response = get_bot_response(prompt)
-            st.markdown(response)
+            
+            # ストリーミング表示用のプレースホルダーを作成
+            response_placeholder = st.empty()
+            stream_text(response, response_placeholder)
         
         # ボットの応答をセッション状態に追加
         st.session_state.messages.append({"role": "assistant", "content": response})
