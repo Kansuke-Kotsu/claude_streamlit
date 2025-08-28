@@ -1,6 +1,7 @@
 import streamlit as st
 import time
-import random
+import os
+from anthropic import Anthropic
 
 def initialize_session_state():
     """チャットの履歴を初期化"""
@@ -10,24 +11,30 @@ def initialize_session_state():
         st.session_state.chat_history = []
 
 def get_bot_response(user_message):
-    """シンプルなボットの応答を生成"""
-    responses = [
-        f"「{user_message}」について興味深いですね！",
-        "それはとても良い質問ですね。",
-        "なるほど、もう少し詳しく教えていただけますか？",
-        "それについてどう思われますか？",
-        f"「{user_message}」に関して、私も同じように考えています。",
-        "とても面白い観点ですね！",
-        "それは素晴らしいアイデアだと思います。",
-    ]
-    
-    # ランダムに応答を選択
-    response = random.choice(responses)
-    
-    # より自然な応答のために少し遅延を追加
-    time.sleep(1)
-    
-    return response
+    """Claude APIを使用してボットの応答を生成"""
+    try:
+        # 環境変数からAPIキーを取得
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            return "⚠️ APIキーが設定されていません。Streamlit Cloudの環境変数でANTHROPIC_API_KEYを設定してください。"
+        
+        # Anthropic clientを初期化
+        client = Anthropic(api_key=api_key)
+        
+        # Claude APIに送信
+        message = client.messages.create(
+            model="claude-3-haiku-20240307",
+            max_tokens=1000,
+            temperature=0.7,
+            messages=[
+                {"role": "user", "content": user_message}
+            ]
+        )
+        
+        return message.content[0].text
+        
+    except Exception as e:
+        return f"⚠️ エラーが発生しました: {str(e)}"
 
 def main():
     st.set_page_config(
